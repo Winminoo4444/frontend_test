@@ -2,10 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:smartseat/studentSignIn.dart';
 import 'package:smartseat/lecturersignin.dart';
 import 'package:smartseat/adminlogin.dart';
+import 'package:smartseat/database/database_helper.dart';
+import 'package:smartseat/database_test_page.dart';
 
 void main() async {
   // Ensure Flutter binding is initialized
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize database on app start
+  try {
+    final dbHelper = DatabaseHelper();
+    await dbHelper.database;
+    
+    // Check if users exist, if not, the onCreate will create them
+    final users = await dbHelper.getAllUsers();
+    print('Database initialized successfully');
+    print('Number of users in database: ${users.length}');
+    
+    // Print demo credentials for debugging
+    if (users.isNotEmpty) {
+      print('Sample users available:');
+      for (var user in users) {
+        print('- Email: ${user['email']}, Role: ${user['role']}');
+      }
+    }
+  } catch (e) {
+    print('Database initialization error: $e');
+  }
   
   runApp(const SmartSeatApp());
 }

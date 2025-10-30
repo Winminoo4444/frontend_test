@@ -11,10 +11,21 @@ class AdminLoginPageState extends State<AdminLoginPage> {
   bool rememberMe = false;
   bool obscurePassword = true;
 
+  // Controllers as class fields
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView( // Allows scrolling if content is long
+      body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -115,6 +126,7 @@ class AdminLoginPageState extends State<AdminLoginPage> {
                         ),
                         const SizedBox(height: 8),
                         TextField(
+                          controller: emailController,
                           decoration: InputDecoration(
                             hintText: "Enter your administrator account info",
                             filled: true,
@@ -126,60 +138,60 @@ class AdminLoginPageState extends State<AdminLoginPage> {
                           ),
                         ),
 
-                       const SizedBox(height: 16),
-                    const Text(
-                      'Password',
-                      style:
-                          TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      obscureText: obscurePassword,
-                      decoration: InputDecoration(
-                        hintText: 'Enter your password',
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Password',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                         ),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            obscurePassword
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: passwordController,
+                          obscureText: obscurePassword,
+                          decoration: InputDecoration(
+                            hintText: 'Enter your password',
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 14),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                obscurePassword
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  obscurePassword = !obscurePassword;
+                                });
+                              },
+                            ),
                           ),
-                          onPressed: () {
-                            setState(() {
-                              obscurePassword = !obscurePassword;
-                            });
-                          },
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
+                        const SizedBox(height: 8),
 
-                    // Remember me + forgot password
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: rememberMe,
-                          onChanged: (value) {
-                            setState(() {
-                              rememberMe = value ?? false;
-                            });
-                          },
+                        // Remember me + forgot password
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: rememberMe,
+                              onChanged: (value) {
+                                setState(() {
+                                  rememberMe = value ?? false;
+                                });
+                              },
+                            ),
+                            const Text('Remember me'),
+                            const Spacer(),
+                            TextButton(
+                              onPressed: () {},
+                              child: const Text(
+                                'Forgot password?',
+                                style: TextStyle(color: Colors.blueAccent),
+                              ),
+                            ),
+                          ],
                         ),
-                        const Text('Remember me'),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () {},
-                          child: const Text(
-                            'Forgot password?',
-                            style: TextStyle(color: Colors.blueAccent),
-                          ),
-                        ),
-                      ],
-                    ),
 
                         const SizedBox(height: 12),
                         SizedBox(

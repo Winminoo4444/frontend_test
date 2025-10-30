@@ -26,7 +26,14 @@ class StudentSignInPageState extends State<StudentSignInPage> {
   }
 
   Future<void> _handleSignIn() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    print('=== LOGIN ATTEMPT ===');
+    print('Email entered: $email');
+    print('Password entered: $password');
+
+    if (email.isEmpty || password.isEmpty) {
       _showSnackBar('Please enter email and password', isError: true);
       return;
     }
@@ -36,10 +43,13 @@ class StudentSignInPageState extends State<StudentSignInPage> {
     });
 
     try {
-      final user = await _authService.login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+      final user = await _authService.login(email, password);
+
+      print('Login result: ${user != null ? "User found" : "User not found"}');
+      if (user != null) {
+        print('User role: ${user.role}');
+        print('User email: ${user.email}');
+      }
 
       if (user != null && user.role == 'student') {
         _showSnackBar('Login successful! Welcome ${user.fullName ?? user.email}');
@@ -51,7 +61,8 @@ class StudentSignInPageState extends State<StudentSignInPage> {
         _showSnackBar('Invalid email or password', isError: true);
       }
     } catch (e) {
-      _showSnackBar('An error occurred. Please try again.', isError: true);
+      print('Login error: $e');
+      _showSnackBar('An error occurred: $e', isError: true);
     } finally {
       setState(() {
         isLoading = false;
@@ -72,27 +83,15 @@ class StudentSignInPageState extends State<StudentSignInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF1E88E5),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Back button
-              TextButton.icon(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                label: const Text(
-                  'Back to role selection',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Header section with gradient background
+              // Header section with blue background
               Container(
                 width: double.infinity,
+                padding: const EdgeInsets.all(24),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Color(0xFF1E88E5), Color(0xFF42A5F5)],
@@ -101,10 +100,23 @@ class StudentSignInPageState extends State<StudentSignInPage> {
                   ),
                 ),
                 child: Column(
-                  children: const [
-                    Icon(Icons.location_on, color: Colors.white, size: 80),
-                    SizedBox(height: 8),
-                    Text(
+                  children: [
+                    // Back button
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        label: const Text(
+                          'Back to role selection',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Icon(Icons.location_on, color: Colors.white, size: 80),
+                    const SizedBox(height: 8),
+                    const Text(
                       'SmartSeat',
                       style: TextStyle(
                         fontSize: 28,
@@ -112,40 +124,33 @@ class StudentSignInPageState extends State<StudentSignInPage> {
                         color: Colors.white,
                       ),
                     ),
-                    SizedBox(height: 8),
-                    Text(
+                    const SizedBox(height: 8),
+                    const Text(
                       'Find your perfect seat, instantly',
                       style: TextStyle(color: Colors.white70, fontSize: 16),
                     ),
-                    SizedBox(height: 32),
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 24),
-
-              // Sign-in form container
+              // White form section
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.all(24),
+                decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    )
-                  ],
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       'Student ID / Email',
-                      style:
-                          TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 8),
                     TextField(
@@ -165,8 +170,7 @@ class StudentSignInPageState extends State<StudentSignInPage> {
                     const SizedBox(height: 16),
                     const Text(
                       'Password',
-                      style:
-                          TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 8),
                     TextField(
@@ -222,31 +226,34 @@ class StudentSignInPageState extends State<StudentSignInPage> {
                     const SizedBox(height: 16),
 
                     // Sign in button
-                    ElevatedButton(
-                      onPressed: isLoading ? null : _handleSignIn,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        minimumSize: const Size(double.infinity, 50),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : _handleSignIn,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                          minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
+                        child: isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Sign In',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
-                      child: isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Text(
-                              'Sign In',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
                     ),
 
                     const SizedBox(height: 16),
@@ -257,61 +264,97 @@ class StudentSignInPageState extends State<StudentSignInPage> {
                       decoration: BoxDecoration(
                         color: Colors.blue.shade50,
                         borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.shade200),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Demo Credentials:',
+                        children: [
+                          const Text(
+                            '📋 Demo Credentials:',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                              fontSize: 13,
+                              color: Colors.blue,
                             ),
                           ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Email: student@my.jcu.edu.au',
-                            style: TextStyle(fontSize: 11),
-                          ),
-                          Text(
-                            'Password: student123',
-                            style: TextStyle(fontSize: 11),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Email:',
+                                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      'student@my.jcu.edu.au',
+                                      style: TextStyle(fontSize: 11),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      'Password:',
+                                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      'student123',
+                                      style: TextStyle(fontSize: 11),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              ElevatedButton(
+                                onPressed: isLoading ? null : () {
+                                  setState(() {
+                                    _emailController.text = 'student@my.jcu.edu.au';
+                                    _passwordController.text = 'student123';
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                ),
+                                child: const Text(
+                                  'Auto-fill',
+                                  style: TextStyle(fontSize: 11, color: Colors.white),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
+
+                    const SizedBox(height: 24),
+
+                    // Footer
+                    Center(
+                      child: RichText(
+                        textAlign: TextAlign.center,
+                        text: const TextSpan(
+                          text: 'By signing in, you agree to our ',
+                          style: TextStyle(color: Colors.grey),
+                          children: [
+                            TextSpan(
+                              text: 'Terms & Privacy Policy',
+                              style: TextStyle(
+                                color: Colors.blueAccent,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 24),
-
-              // Footer
-              Center(
-                child: RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    text: 'By signing in, you agree to our ',
-                    style: const TextStyle(color: Colors.white70),
-                    children: [
-                      TextSpan(
-                        text: 'Terms & Privacy Policy',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          decoration: TextDecoration.underline,
-                        ),
-                        recognizer: null,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
             ],
           ),
         ),
       ),
-      backgroundColor: const Color(0xFF1E88E5),
     );
   }
 }
